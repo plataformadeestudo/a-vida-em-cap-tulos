@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A vida em capítulos — Marcos</title>
+
+  <style>
+    /* ==========================================================
+       BASE
+       ========================================================== */
+    :root {
+      --paper: #f2eadb;
+      --ink: #33291f;
+      --muted: #8b7965;
+      --accent: #8c5b3c;
+      --line: #cdbda7;
+      --white: #faf5eb;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Georgia, 'Times New Roman', serif;
+      background-image: radial-gradient(rgba(75, 45, 22, .055) .7px, transparent .8px);
+      background-size: 5px 5px;
+    }
+
+    /* ==========================================================
+       BARRA DE PROGRESSO + MENU
+       ========================================================== */
+    #progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0;
+      background: var(--accent);
+      z-index: 30;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 5vw;
+      background: rgba(242, 234, 219, .93);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    nav a { color: var(--ink); text-decoration: none; }
+    nav .links { display: flex; gap: 20px; }
+
+    /* ==========================================================
+       MOLDURA DE FOTO — usada em TODO o site (capa, linha do tempo
+       e álbum). Tudo quadrado e do mesmo jeito.
+       ========================================================== */
+    .photo {
+      margin: 0;
+      padding: 10px 10px 26px;
+      background: #fffaf2;
+      box-shadow: 0 7px 18px #49351b18;
+    }
+
+    .photo .frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;          /* quadrado */
+      overflow: hidden;
+      background: rgba(140, 91, 60, .07);
+      border: 1px dashed #bba58d;
+    }
+
+    /* texto de reserva, só aparece enquanto não tem foto */
+    .photo .frame::before {
+      content: 'sua foto aqui';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: italic 13px Georgia, serif;
+      color: #a8927a;
+    }
+
+    .photo .frame img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;            /* preenche o quadrado sem distorcer */
+      display: block;
+    }
+
+    figcaption { display: none; }
+
+    /* ==========================================================
+       CAPA
+       ========================================================== */
+    .cover {
+      min-height: 88vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(260px, .85fr);
+      gap: clamp(24px, 5vw, 80px);
+      align-items: center;
+      padding: clamp(40px, 8vw, 100px);
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #e8dcc8, #f3eadb 65%, #e1d1bb);
+    }
+
+    .cover::before,
+    .cover::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      border: 1px solid rgba(140, 91, 60, .12);
+    }
+
+    .cover::before {
+      width: 48vw; height: 48vw;
+      max-width: 620px; max-height: 620px;
+      left: -15%; top: 15%;
+    }
+
+    .cover::after {
+      width: 28vw; height: 28vw;
+      max-width: 360px; max-height: 360px;
+      right: 4%; bottom: 0;
+      border-color: rgba(140, 91, 60, .15);
+    }
+
+    .cover-inner { max-width: 640px; position: relative; z-index: 2; }
+
+    .eyebrow {
+      display: inline-block;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .26em;
+      color: var(--accent);
+      font: 11px Arial, sans-serif;
+      letter-spacing: .26em;
+    }
+
+    .cover h1 {
+      font-size: clamp(56px, 9vw, 118px);
+      font-weight: 400;
+      line-height: .88;
+      margin: 30px 0 24px;
+      letter-spacing: -.06em;
+      color: #35291f;
+    }
+
+    .cover-sub {
+      max-width: 480px;
+      font-size: clamp(18px, 2.6vw, 25px);
+      font-style: italic;
+      line-height: 1.5;
+      color: #6d5944;
+    }
+
+    .cover-note {
+      margin-top: 44px;
+      font: 10px Arial, sans-serif;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: #8a7059;
+    }
+
+    .cover .photo {
+      width: min(100%, 380px);
+      justify-self: center;
+      position: relative;
+      z-index: 2;
+      transform: rotate(2deg);
+      box-shadow: 0 24px 55px rgba(52, 34, 18, .17);
+    }
+
+    .cover .photo::before {
+      content: '';
+      position: absolute;
+      top: -15px;
+      left: 35%;
+      width: 100px;
+      height: 28px;
+      background: rgba(184, 157, 116, .24);
+      transform: rotate(-4deg);
+      z-index: 3;
+    }
+
+    /* ==========================================================
+       INTRODUÇÃO
+       ========================================================== */
+    .intro {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 120px 8vw 95px;
+      text-align: center;
+    }
+
+    .intro .bigquote {
+      font-size: clamp(28px, 4.2vw, 44px);
+      font-style: italic;
+      line-height: 1.35;
+    }
+
+    .section-label {
+      font: 11px Arial, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: .25em;
+      color: var(--accent);
+    }
+
+    /* ==========================================================
+       LINHA DO TEMPO
+       ========================================================== */
+    .timeline {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 30px 5vw 90px;
+      position: relative;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--line);
+    }
+
+    .chapter {
+      position: relative;
+      width: calc(50% - 55px);
+      margin: 0 0 105px;
+    }
+
+    .chapter:nth-child(even) { margin-left: calc(50% + 55px); }
+
+    .chapter::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      right: -61px;
+      width: 11px;
+      height: 11px;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      background: var(--paper);
+    }
+
+    .chapter:nth-child(even)::before { right: auto; left: -61px; }
+
+    .chapter-number {
+      font: 10px Arial, sans-serif;
+      letter-spacing: .2em;
+      color: var(--accent);
+    }
+
+    .chapter h2 {
+      font-size: clamp(26px, 3.4vw, 42px);
+      font-weight: 400;
+      line-height: 1.08;
+      margin: 15px 0 22px;
+    }
+
+    .chapter p {
+      font-size: 17px;
+      line-height: 1.8;
+      color: #554839;
+    }
+
+    /* fotos da linha do tempo: todas do mesmo tamanho */
+    .chapter-photos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-start;
+      margin-top: 26px;
+    }
+
+    .chapter-photos .photo {
+      width: 300px;                 /* tamanho das fotos da linha do tempo */
+      max-width: 100%;
+      transform: rotate(-1deg);
+    }
+
+    .chapter-photos .photo:nth-child(even) { transform: rotate(1.5deg); }
+
+    /* ==========================================================
+       ÁLBUM
+       ========================================================== */
+    .album {
+      padding: 95px 5vw 115px;
+      background: #e8dece;
+      border-top: 1px solid var(--line);
+    }
+
+    .album-title {
+      max-width: 700px;
+      margin: 0 auto 45px;
+      text-align: center;
+    }
+
+    .album-title h2 {
+      font-weight: 400;
+      font-size: clamp(36px, 6vw, 64px);
+      margin: 14px 0;
+    }
+
+    .album-title .cover-sub { margin-left: auto; margin-right: auto; }
+
+    .gallery {
+      max-width: 1100px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .gallery .photo { box-shadow: 0 5px 15px #49351b14; }
+
+    /* ==========================================================
+       CARTA
+       ========================================================== */
+    .letter-section {
+      display: flex;
+      justify-content: center;
+      padding: 110px 8vw 125px;
+    }
+
+    .letter {
+      max-width: 740px;
+      padding: clamp(24px, 5vw, 60px);
+      background: rgba(255, 250, 242, .5);
+      border: 1px solid #d7c6af;
+      box-shadow: 0 10px 30px #45331b0c;
+    }
+
+    .letter h2 {
+      font-weight: 400;
+      font-size: clamp(36px, 5vw, 58px);
+      text-align: center;
+      margin: 0 0 36px;
+    }
+
+    .letter p {
+      font-size: 18px;
+      line-height: 1.9;
+      color: #554839;
+    }
+
+    .signature { font-style: italic; margin-top: 35px; }
+
+    /* ==========================================================
+       FINAL + RODAPÉ
+       ========================================================== */
+    .ending { text-align: center; padding: 70px 20px 100px; }
+
+    .ending p {
+      font-style: italic;
+      font-size: clamp(24px, 4vw, 42px);
+      color: #755840;
+    }
+
+    footer {
+      padding: 25px;
+      text-align: center;
+      border-top: 1px solid var(--line);
+      color: #8a7965;
+      font: 10px Arial, sans-serif;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    /* ==========================================================
+       CELULAR
+       ========================================================== */
+    @media (max-width: 720px) {
+      nav { padding: 12px 4vw; font-size: 10px; }
+      nav .links { gap: 10px; }
+
+      .cover {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        padding: 70px 8vw 65px;
+        gap: 35px;
+        text-align: center;
+      }
+      .cover-inner { max-width: 100%; }
+      .cover h1 { font-size: clamp(58px, 16vw, 92px); }
+      .cover-sub { margin-left: auto; margin-right: auto; }
+      .cover-note { margin-top: 28px; }
+      .cover .photo { width: min(75%, 320px); }
+      .cover::before { left: -45%; top: 8%; }
+      .cover::after { right: -15%; bottom: 10%; }
+
+      .intro { padding: 85px 7vw; }
+
+      .timeline::before { left: 14px; }
+      .chapter,
+      .chapter:nth-child(even) { width: auto; margin: 0 0 75px 42px; }
+      .chapter::before,
+      .chapter:nth-child(even)::before { left: -34px; right: auto; }
+      .chapter-photos .photo { width: 100%; max-width: 320px; }
+
+      .gallery { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="progress"></div>
+
+  <nav>
+    <a href="#top">A vida em capítulos</a>
+    <div class="links">
+      <a href="#timeline">História</a>
+      <a href="#album">Álbum</a>
+      <a href="#carta">Carta</a>
+    </div>
+  </nav>
+
+
+  <!-- =======================================================
+       CAPA
+       ======================================================= -->
+  <header class="cover" id="top">
+    <div class="cover-inner">
+      <span class="eyebrow">Um álbum de lembranças</span>
+      <h1>A vida em<br />capítulos</h1>
+      <p class="cover-sub">Uma história sobre o Marcos, contada por quem vive ao lado dele.</p>
+      <div class="cover-note">20 de novembro · para o Marcos</div>
+    </div>
+
+    <!-- FOTO DA CAPA -->
+    <figure class="photo">
+      <div class="frame">
+        <img src="img/20.jpeg" alt="" />
+      </div>
+    </figure>
+  </header>
+
+
+  <!-- =======================================================
+       INTRODUÇÃO
+       ======================================================= -->
+  <section class="intro">
+    <span class="section-label">Antes de começar</span>
+    <p class="bigquote">
+      Essa é uma tentativa de juntar algumas partes da tua vida: as que vieram antes de nós,
+      as que lembramos juntos e as que ainda estão acontecendo. Fotos, histórias e pequenos
+      momentos que ajudam a contar quem tu és. Um capítulo de cada vez.
+    </p>
+  </section>
+
+
+  <!-- =======================================================
+       LINHA DO TEMPO (14 capítulos)
+       Cada <img src="link da imagem aqui"> é um espaço de foto.
+       Troque o texto "link da imagem aqui" pelo link ou nome do arquivo.
+       ======================================================= -->
+  <section class="timeline" id="timeline">
+
+      <article class="chapter" id="cap-01">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 01</span>
+          <h2>O MARCOS, PRA QUEM NÃO CONHECE</h2>
+        </div>
+
+        <p>
+          Meu pai é daqueles que estão sempre prontos pra ajudar e fazer o melhor por quem ele ama. O carinho dele vem mais em atitude do que em palavra, e ele sempre dá um jeito de fazer a gente rir, até nos dias ruins. Tem um humor duvidoso, uma teimosia que não é pouca e, quando enfia uma ideia na cabeça, ninguém tira. Gosta de futebol, de filme de viking (que nem sempre é bom) e de fazer as coisas do jeito dele. Não desiste fácil e, acima de tudo, é uma pessoa e um pai incrível.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/16.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-02">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 02</span>
+          <h2>GURI DE PORTO ALEGRE</h2>
+        </div>
+
+        <p>
+          Meu pai nasceu em Porto Alegre, no dia 20 de novembro de 1975. Cresceu na mesma cidade, com os pais e o irmão, numa casa que continua na família até hoje. Foi ali que começou muita coisa: a infância, as amizades, as primeiras histórias e os caminhos que ele foi seguindo antes de ter a própria família.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/6.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+
+      <article class="chapter" id="cap-03">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 03</span>
+          <h2>BOM EM MATEMÁTICA, RUIM DE FREQUÊNCIA</h2>
+        </div>
+
+        <p>
+          A infância dele foi de futebol e brincadeira com o irmão. Sempre tinha uma bola por perto e um motivo pra sair e jogar. Teve também aula matada e travessura que provavelmente nem foi toda contada até hoje. Na escola ele era muito bom em matemática, o que combina pouco com a frequência nas aulas. Mas, pelo jeito, ele tinha outras prioridades kkkkkkkk.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/5.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-04">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 04</span>
+          <h2>PRANCHA, TURMA E UMAS CONFUSÕES</h2>
+        </div>
+
+        <p>
+          Na adolescência vieram o surf, os amigos e as confusões. Ele tinha uma turma meio duvidosa, tem história que ele conta e outras que com certeza nunca vão sair de lá. Mesmo sem saber de todos os detalhes, dá pra imaginar que foi uma época muito bem aproveitada.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/22.jpeg" alt="" />
+            </div>
+          </figure>
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/24.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-05">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 05</span>
+          <h2>ANTES DA GENTE</h2>
+        </div>
+
+        <p>
+          Antes de casar, ter filhas, abrir negócio e assumir todas as responsabilidades que vieram depois, existiu um tempo em que ele só estava vivendo a própria vida: trabalhando, conhecendo gente e descobrindo pra onde ir. Foi nessa fase que ele começou a construir o que, anos depois, viraria a história da nossa família.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/43.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-06">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 06</span>
+          <h2>A GRINGA BONITA DO ESPETINHO</h2>
+        </div>
+
+        <p>
+          Tudo começou quando um amigo avisou meu pai que tinha uma “gringa bonita” no espetinho do meu tio. Foi lá que os dois se conheceram e começaram a conversar. Depois vieram os encontros e o namoro, que foi ficando sério. Meu pai fala que a minha mãe se apaixonou primeiro, mas, que fique entre nós, a gente sabe quem caiu de amores primeiro. Como moravam longe um do outro, tiveram que inventar o próprio jeito de manter contato.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/42.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-07">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 07</span>
+          <h2>TELEFONE ERA CARO, ENTÃO ESCREVIAM CARTAS</h2>
+        </div>
+
+        <p>
+          Minha mãe morava longe da casa dele, e falar por telefone não era fácil: tinha limite de tempo e saía caro. Então os dois escreviam cartas, muitas. Era assim que contavam as novidades, conversavam com calma e ficavam perto mesmo de longe. Hoje é só mandar mensagem, mas naquele tempo cada carta tinha que ser escrita, enviada e depois esperar chegar.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/45.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-08">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 08</span>
+          <h2>UM SIM QUE DUROU 25 ANOS</h2>
+        </div>
+
+        <p>
+          No dia 16 de novembro de 2001, meus pais se casaram. Foi um casamento grande, com muito convidado e uns amigos do meu pai que, pelo que contam, não eram exatamente tranquilos. Teve confusão, teve gente maluca, teve de tudo um pouco, e no fim deu certo. Este ano eles completaram 25 anos juntos, e aquela história que começou com um encontro, conversas e cartas continua até hoje.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/23.jpeg" alt="" />
+            </div>
+          </figure>
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/17.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-09">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 09</span>
+          <h2>PAI DE DUAS MENINAS</h2>
+        </div>
+
+        <p>
+          Eu nasci em 8 de fevereiro de 2010 e minha irmã em 6 de maio de 2015. Desde então juntamos muita lembrança com ele: os livros que ele lia pra eu dormir, os passeios na Redenção, os chocolates e ursinhos que apareciam depois das viagens de trabalho, os sorvetinhos nas viagens de carro e os programas simples que viravam lembrança. Também já fomos a um jogo do Grêmio, óbvio, e hoje ele e a Bia gostam de acompanhar futebol juntos. No fim, é isso que fica: os passeios, as brincadeiras e o tempo que ele passa com a gente.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/47.jpeg" alt="" />
+            </div>
+          </figure>
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/49.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-10">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 10</span>
+          <h2>TRABALHO NUNCA FALTOU</h2>
+        </div>
+
+        <p>
+          Meu pai já trabalhou com muita coisa. Passou por vendas, abriu uma lancheria em Tapejara, foi pra André da Rocha trabalhar na prefeitura, voltou pras vendas, alugou um boliche em Nova Prata e hoje é empresário. Teve mudança, recomeço e oportunidade diferente, mas uma coisa nunca faltou: trabalho e vontade de fazer as coisas acontecerem.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/50.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-11">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 11</span>
+          <h2>AJUDANTE OFICIAL</h2>
+        </div>
+
+        <p>
+          Uma das minhas lembranças é de ir com ele em algumas vendas, ver como era o trabalho dele e como nem sempre era fácil vender. Também lembro de ir a um mercado em Tapejara onde ele vendia coisas, enquanto eu brincava num espaço que tinha lá. Pra mim, essa era a melhor parte do passeio. São lembranças pequenas, mas me fazem lembrar como era ficar junto dele mesmo quando ele estava trabalhando.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/31.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-12">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 12</span>
+          <h2>VIAGEM SEM CAFÉ NO POSTO "SIM" NÃO VALE</h2>
+        </div>
+
+        <p>
+          Gramado, Araranguá, Bombinhas, Imbé, Torres e tantos outros lugares. Teve viagem grande e teve passeio, mas muitas viraram lembrança que eu guardo até hoje. Lembro de ir pra praia com ele, de brincar no mar e na piscina, e de como ele sempre topava entrar na água com a gente, mesmo cansado. Uma vez eu fui muito pro fundo e não consegui sair de uma correnteza, e ele foi até mim e me ajudou a sair. Essa lembrança diz muito sobre quem ele é. E nas viagens de carro, sempre temos que parar no posto pra tomar café e, como ritual, a bia tem que derrubar a bebida.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/51.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-13">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 13</span>
+          <h2>PRA QUEM NÃO ENTENDE, É QUEIMADO. PRA GENTE, É ESPECIAL</h2>
+        </div>
+
+        <p>
+         Caso ainda não tenha ficado claro, ele é gremista, gosta de música antiga e tem umas que a gente sabe de cor, como Beijo de Varanda e Pinhal. Tem o clássico “tu tem que estudar”, os filmes péssimos que ele escolhe, o Monstro da Cosquinha, os pousadões na sala, as jantas que às vezes eram muito saudáveis e às vezes eram nuggets kkkkkk (mas a gente adora, né). E, óbvio, o churrasco queimado, que todo mundo fala que é ruim, mas pra mim é ótimo. Só duas pessoas no mundo sabem fazer, e uma delas é meu querido pai.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/40.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+      <article class="chapter" id="cap-14">
+        <div class="chapter-head">
+          <span class="chapter-number">CAPÍTULO 14</span>
+          <h2>DO JEITINHO DELE</h2>
+        </div>
+
+        <p>
+          Hoje ele continua sendo o mesmo pai, que trabalha muito pra construir um futuro melhor pra família, resolve as coisas, ajuda quando a gente precisa e tenta estar presente mesmo cansado. É o pai que demora um pouco, mas faz os furos na parede pra gente pendurar nossas coisas, que aceita pedido de última hora e também deixa umas coisas pra última hora. Gosta de viajar de carro, fazer churrasco, ficar com a família e aproveitar o tempo junto. E, no meio da correria, é bom saber que a gente tem ele por perto, do jeitinho dele.
+        </p>
+
+        <div class="chapter-photos">
+          <figure class="photo">
+            <div class="frame">
+              <img src="img/52.jpeg" alt="" />
+            </div>
+          </figure>
+        </div>
+      </article>
+
+  </section>
+  <!-- =======================================================
+       ÁLBUM (12 espaços de foto)
+       Para ter mais fotos, copie e cole um bloco <figure> inteiro.
+       ======================================================= -->
+  <section class="album" id="album">
+    <div class="album-title">
+      <span class="section-label">Fotografias</span>
+      <h2>O álbum de lembranças</h2>
+      <p class="cover-sub">Momentos que não cabem em um capítulo só.</p>
+    </div>
+
+    <div class="gallery">
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/18.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/21.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/25.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/26.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/27.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/28.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/29.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/30.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/32.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/33.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/34.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/35.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/36.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/37.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/41.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/44.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/46.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/48.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/53.jpeg" alt="" />
+          </div>
+        </figure>
+        <figure class="photo">
+          <div class="frame">
+            <img src="img/54.jpeg" alt="" />
+          </div>
+        </figure>
+    </div>
+  </section>
+
+
+  <!-- =======================================================
+       CARTA
+       ======================================================= -->
+    <section class="letter-section" id="carta">
+    <div class="letter">
+      <span class="section-label">Para ti</span>
+      <h2>Uma última coisa</h2>
+
+        <p>
+          Só queria deixar registrado o quanto eu te amo e como tu és especial pra mim. Sei que a vida não foi necessariamente fácil contigo, mas eu admiro a tua coragem de continuar tentando, mesmo nos dias mais difíceis.
+        </p>
+
+        <p>
+          Quando as coisas ficarem complicadas, olha pra família linda que tu construiu. Espero que isso melhore um pouco o teu dia, porque a gente está sempre aqui, do teu lado.
+        </p>
+
+        <p>
+          Tu é o meu porto seguro. Obrigada por criar uma relação em que eu sei que posso confiar em ti, e que se eu precisar, independente do lugar e da hora, tu vai vir me buscar e me ajudar. Eu te amo muito por isso. É bom saber que a gente tem alguém, e, graças a Deus, eu tenho vocês.
+        </p>
+
+        <p>
+          Parabéns por ser assim: gentil, carinhoso, dedicado e a pessoa que faz tudo por nós. Tu nem sempre percebe, mas faz diferença em tudo.
+        </p>
+
+        <p>
+          Que venham muitos anos ainda, com saúde, amor, paz, alegria, sucesso, foco e paz de novo, kkkk. Com o tempo, tudo se ajeita e as coisas começam a se encaixar.
+        </p>
+
+        <p>
+          Tu é incrível mesmo, e eu tenho muito orgulho de ti, mesmo que às vezes eu tenha medo de tu gritar "nenê do papai" na rua de novo, mas enfim, kkkk.
+        </p>
+
+        <p>
+          Te amo muito e vou te levar como exemplo pra minha vida, sempre!
+        </p>
+
+        <p class="signature">
+          Com carinho,<br />Joana, tua filha preferida (só não conta pra Bia)
+        </p>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       FINAL
+       ======================================================= -->
+  <section class="ending">
+    <p>Que venham muitos capítulos ainda.</p>
+    <span class="section-label">Com amor, sempre.</span>
+  </section>
+
+  <footer>Feito com lembranças · Para o Marcos</footer>
+
+
+  <script>
+    // barra de progresso no topo
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      document.getElementById('progress').style.width = (max > 0 ? h.scrollTop / max * 100 : 0) + '%';
+    });
+  </script>
+</body>
+</html>
